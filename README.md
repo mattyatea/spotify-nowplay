@@ -1,38 +1,38 @@
-# create-svelte
+# Spotify Nowplay for Misskey
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+## これは何？
 
-## Creating a project
+Spotify Nowplay for Misskey は Spotifyで再生中の曲をMisskeyに投稿するためのツールになる予定のものです。
+まだ投稿機能はできてません()
 
-If you're seeing this, you've probably already done this step. Congrats!
+## 使い方
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+### 1. Spotifyのアプリを作成する
 
-# create a new project in my-app
-npm create svelte@latest my-app
+[Spotify for Developers](https://developer.spotify.com/dashboard/) にアクセスしてログインします。
+
+ログイン後、`CREATE AN APP`をクリックしてアプリを作成します。
+
+Client IDとClient Secretをメモしておきます。
+
+作成後、`EDIT SETTINGS`をクリックして`Redirect URIs`に`http://localhost:5173/callback` を追加します。
+
+### 2. .envに設定を書く
+
+.env.exampleをコピーして.envを作成します。
+
+```
+VITE_URL=https://
+VITE_PORT=8080
+VITE_SPOTIFY_CLIENT_ID=
+VITE_SPOTIFY_CLIENT_SECRET=
 ```
 
-## Developing
+これの VITE_SPOTIFY_CLIENT_ID と VITE_SPOTIFY_CLIENT_SECRET に先ほどメモしたものを入力します。
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+これで準備は完了です。
 
-```bash
-npm run dev
+### 3. buildする
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+`vite build`を実行します。
+そうすると build ディレクトリができるので `node build` すればたぶん動きます。
