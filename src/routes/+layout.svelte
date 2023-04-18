@@ -7,7 +7,7 @@
     >
         <Row>
             <Section>
-                <a href="/"><Title>Now playing</Title></a>
+                <a href="/"><Title>Now playing - Alpha</Title></a>
             </Section>
             <Section align="end" toolbar>
                 <a href="/account">

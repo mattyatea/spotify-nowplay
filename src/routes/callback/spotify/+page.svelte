@@ -15,7 +15,6 @@
     onMount(async () => {
         async function getAccessToken(clientId, code) {
             const verifier = localStorage.getItem("verifier");
-
             const params = new URLSearchParams();
             params.append("client_id", clientId);
             params.append("grant_type", "authorization_code");
@@ -23,7 +22,7 @@
             params.append("redirect_uri", `${CallbackBase}spotify`);
             params.append("code_verifier", verifier);
 
-            const result = await fetch("https://accounts.spotify.com/api/token", {
+            const result = await window.fetch("https://accounts.spotify.com/api/token", {
                 method: "POST",
                 headers: {"Content-Type": "application/x-www-form-urlencoded"},
                 body: params
@@ -67,11 +66,17 @@
             await redirectToAuthCodeFlow(clientId);
         } else {
             const {access_token, refresh_token} = await getAccessToken(clientId, code);
-            console.log(access_token, refresh_token);
-            localStorage.setItem('SpoToken', access_token);
-            localStorage.setItem('SpoRefresh', refresh_token);
-            Check = "認証に成功しました";
-            location.href = "/";
+            if (!access_token || !refresh_token) {
+                Check = "認証に失敗しました";
+            } else {
+                console.log(access_token, refresh_token);
+                localStorage.setItem('SpoToken', access_token);
+                localStorage.setItem('SpoRefresh', refresh_token);
+                Check = "認証に成功しました";
+                location.href = "/account";
+            }
+
+
         }
 
     });

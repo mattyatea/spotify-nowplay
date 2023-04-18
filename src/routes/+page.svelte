@@ -1,31 +1,84 @@
-{#if User.MisskeyLogin}
-    {MiName}@{MiHost}
-{:else}
-    Misskey No Login
-{/if}
-<br>
-{#if User.SpotifyLogin}
-    {#if NowPlaying}
-        <img alt="Song Album Jacket" width="30%" src="{NowPlay.item.album.images[0].url}"><br>
-        {SongName} - {SongArtist}
+<div>
+    {#if User.MisskeyLogin}
+        {MiName}@{MiHost}
     {:else}
-        Spotify Yes Login
+        Misskey No Login
     {/if}
-{:else}
-    Spotify No Login
-{/if}
-
+    <br>
+    {#if User.SpotifyLogin}
+        {#if NowPlaying}
+            <img alt="Song Album Jacket" width="30%" src="{NowPlay.item.album.images[0].url}"><br>
+            {SongName} - {NowPlay.item.artists[0].name}<br>
+            {#if User.MisskeyLogin}
+                <IconButton class="material-icons" on:click={() => SendMisskey()}>
+                    send
+                </IconButton>
+            {/if}
+        {:else}
+            現在再生中の曲はありません。
+        {/if}
+    {:else}
+        Spotify No Login
+    {/if}
+</div>
 <script lang="ts">
+    import IconButton from '@smui/icon-button';
     import {onMount} from 'svelte';
 
+    const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
     let User = {SpotifyLogin: false, MisskeyLogin: false, MastodonLogin: false};
-    let NowPlaying, MiName, MiId, MiInstance, MiToken, MiHost, SpoToken, SpoRefresh, NowPlay, SongName, SongArtist; // くそ長定義
+    let MyMi, NowPlaying, MiName, MiId, MiInstance, MiToken, MiHost, SpoToken, SpoRefresh, NowPlay, SongName,
+        SongArtist; // くそ長定義
 
     async function GetNowPlay(SpoToken) {
         const result = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
             method: "GET",
             headers: {"Authorization": "  Bearer " + SpoToken}
         });
+        if (result.status === 204) {
+            return null;
+        } else {
+            return await result.json();
+        }
+
+    }
+
+
+    async function SendMisskey() {
+        await fetch(MiInstance + "api/drive/files/upload-from-url", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(({
+                "i": MiToken,
+                "url": NowPlay.item.album.images[0].url,
+            }))
+        })
+        await wait(2500);
+        const FileIDExt = await fetch(MiInstance + "api/drive/files/find", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(({
+                "i": MiToken,
+                "name": NowPlay.item.album.images[0].url.slice(-40) + ".jpg",
+            }))
+        })
+        const FileID = await FileIDExt.json();
+        const result = await fetch(MiInstance + "api/notes/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(({
+                "i": MiToken,
+                "text": "NowPlaying \n" + SongName + " - " + SongArtist,
+                "visibility": "home",
+                "mediaIds": [FileID[0].id],
+            }))
+        })
         return await result.json();
     }
 
@@ -37,10 +90,11 @@
         MiInstance = localStorage.getItem('MiInstance') ? localStorage.getItem('MiInstance') : null;
         MiHost = MiInstance ? MiInstance.replace(/^https?:\/\//, '').replace(/\/$/, '') : null;
 
+
         if (SpoToken) { // spotifyログイン済みの場合に実行
             User.SpotifyLogin = true; // spotifyログイン済みのフラグを立てる
             NowPlay = await GetNowPlay(SpoToken); // 現在再生中の曲を取得
-            if (NowPlay.is_playing == true) {
+            if (NowPlay) {
                 NowPlaying = true; // 再生中の曲がある場合のフラグ立て
                 SongName = NowPlay.item.name; // 曲名
                 SongArtist = NowPlay.item.artists[0].name; // アーティスト名
@@ -50,19 +104,21 @@
         }
         if (MiToken && MiInstance) { // misskeyログイン済みの場合に実行
             User.MisskeyLogin = true; // misskeyログイン済みのフラグを立てる
-            fetch(MiInstance + "api/i", { // Miの自分のユーザーの情報取得
+
+            await fetch(MiInstance + "api/i", { // Miの自分のユーザーの情報取得
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(({"i": MiToken}))
-            })
-                .then(res => res.json())
-                .then(res => {
-                    MiName = res.name; // Miのユーザー名
-                    MiId = res.id; // MiのユーザーID
-                });
-
+            }).then((res) => {
+                return res.json();
+            }).then((json) => {
+                MiName = json.name; // Miのユーザー名
+                MiId = json.id; // MiのユーザーID
+            });
+        } else {
+            User.MisskeyLogin = false; // misskeyログイン済みのフラグを立てる
         }
     })
 </script>

@@ -1,5 +1,5 @@
 <div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%); min-width: 280px; ">
-    <div class="a" class:Activity_Login={Activity_Login}>
+    <div class="a" class:Activity_Login={MisskeyLogin}>
         <div>
             <Textfield variant="filled" bind:value={Url} label="Instance Url">
                 <HelperText slot="helper">例: https://misskey.io</HelperText>
@@ -129,7 +129,7 @@
                 body: {
                     "name": "Nowplaying For Activity Pub",
                     "description": "",
-                    "permission": ["write:notes"],
+                    "permission": ["write:notes", "write:drive", "read:drive"],
                     "callbackUrl": CallbackBase + "misskey"
                 }
             }) //app/createを使ってアプリを作成
@@ -148,11 +148,11 @@
                 })
         } else if (parseFloat(R_data.version) >= 12.28) { // 12.28以上
             const uuid = crypto.randomUUID();//UUID作成
-            window.location.href = InstanceURI + "/miauth/" + uuid + "?name=Nowplaying For Activity Pub&callback=" + CallbackBase + "miauth&permission=write:notes";//飛ばす
+            window.location.href = InstanceURI + "/miauth/" + uuid + "?name=Nowplaying For Activity Pub&callback=" + CallbackBase + "miauth&permission=write:notes,write:drive,read:drive";//飛ばす
         }
     }
 
-    $: if (Activity_Login) {
+    $: if (MisskeyLogin) {
         Url = "https://";
     } //たぶん入力フォームの初期化
 
@@ -164,22 +164,22 @@
             .then(data => {
                 if (data.url) {
                     (data.name == "undefined") ? instance_name = Url : instance_name = data.name;
-                    if (data.software == "misskey" && !MisskeyLogin || data.software == "meisskey" && !MisskeyLogin) {
+                    if (data.software == "misskey" || data.software == "meisskey") {
                         open = true;
                     } else {
                         alert(data.software + "は現在サポートしていません。");
                     }
-                    /* 謎のコード
+
                 } else if (data.software == "misskey" && MisskeyLogin || data.software == "meisskey" && MisskeyLogin) {
                     alert("すでに" + data.name + "にログインしています。");
-                } else if (data.software == "mastodon" && !MastodonLogin) {
+                } /* else if (data.software == "mastodon" && !MastodonLogin) {
                     open = true;
                 } else if (data.software == "mastodon" && MastodonLogin) {
                     alert("すでに" + data.name + "にログインしています。");
                 } else {
                     alert(data.software + "は現在サポートしていません。");
                 }*/
-                }
+
             });
     }
     $: if (SpotifyLogin) {
