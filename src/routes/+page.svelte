@@ -131,12 +131,11 @@
                     NowTime = NowPlay.progress_ms / 1000; // 再生時間
                     if (SongName !== prevSongName) {
                         let SendText = "NowPlaying \n" + SongName + " - " + SongArtist
+                        if (MiInstance && AutoNoteChk && SongName !== prevSongName) await SendMisskey(SendText);
                         prevSongName = SongName;
                         prevSongArtist = SongArtist;
-                        if (MiInstance && AutoNoteChk && NowTime >= 10) await SendMisskey(SendText);
+
                     }
-
-
                 } else {
                     NowPlaying = false; //今再生中の曲がない場合のフラグ立て
                 }
