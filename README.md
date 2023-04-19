@@ -31,8 +31,8 @@ VITE_SPOTIFY_CLIENT_SECRET=
 これの VITE_SPOTIFY_CLIENT_ID と VITE_SPOTIFY_CLIENT_SECRET に先ほどメモしたものを入力します。
 
 これで準備は完了です。
-
-### 3. buildする
+### 3. pnpm install をする
+### 4. buildする
 
 `vite build`を実行します。
 そうすると build ディレクトリができるので `node build` すればたぶん動きます。
