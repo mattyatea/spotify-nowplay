@@ -39,7 +39,7 @@
     let User = {SpotifyLogin: false, MisskeyLogin: false, MastodonLogin: false};
     let AutoNote = false;
     let MyMi, NowPlaying, MiName, MiId, MiInstance, MiToken, MiHost, SpoToken, SpoRefresh, NowPlay, SongName,
-        SendText, AutoNoteChk,
+        SendText, AutoNoteChk, NowTime,
         SongArtist; // くそ長定義
     $: AutoNoteChk = AutoNote ? 'true' : 'false'
 
@@ -128,14 +128,14 @@
                     NowPlaying = true; // 再生中の曲がある場合のフラグ立て
                     SongName = NowPlay.item.name; // 曲名
                     SongArtist = NowPlay.item.artists[0].name; // アーティスト名
+                    NowTime = NowPlay.progress_ms / 1000; // 再生時間
                     if (SongName !== prevSongName) {
                         let SendText = "NowPlaying \n" + SongName + " - " + SongArtist
-                        if (MiInstance && AutoNoteChk) await SendMisskey(SendText);
-
-
                         prevSongName = SongName;
                         prevSongArtist = SongArtist;
+                        if (MiInstance && AutoNoteChk && NowTime >= 10) await SendMisskey(SendText);
                     }
+
 
                 } else {
                     NowPlaying = false; //今再生中の曲がない場合のフラグ立て
